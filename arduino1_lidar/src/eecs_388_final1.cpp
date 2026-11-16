@@ -1,5 +1,5 @@
 /******************************************************************************
- *   Header Includes - test commit
+ *   Header Includes
  *******************************************************************************/
 #include <Arduino.h>
 #include <stdint.h>
@@ -33,6 +33,8 @@ return;
 void loop() 
 {
 uint16_t dist = 0;              /* LIDAR distance data is 16 bits. */
+uint8_t dist_l = 0;           /* LIDAR distance data is sent as two bytes, low byte first. */
+uint8_t dist_h = 0;          /* LIDAR distance data is sent as two bytes, high byte second. */
 
 ser_printline("Setup completed.");
 ser_write( '\n' );
@@ -62,6 +64,19 @@ while( 1 )
 
 			- Send the distance to Arduino2
         */
+            ser_printline("reading in ser_read() data frame from TFmini sensor...");
+            ser_write( '\n' ); 
+            // Read the next 7 bytes of the data frame (we only need the distance data, which is 2 bytes)
+            dist_l = ser_read(); // Read the low byte of the distance data
+            dist_h = ser_read(); // Read the high byte of the distance data
+            dist = (dist_h << 8) | dist_l; // Combine the two bytes into a 16-bit value
+            ser_printf("Distance is: %d cm\n", dist); // Print the distance to the console
+
+            // write the distance to Arduino2
+            ser_write(dist_l); // Send the low byte of the distance data
+            ser_write(dist_h); // Send the high byte of the distance data
+            // @NOTE: might have to recalculate distance in arduino 2 since it's a 16 byte value...? 
+ 
         }
     }
 
