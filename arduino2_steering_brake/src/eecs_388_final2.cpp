@@ -65,51 +65,50 @@ static void auto_brake()
 
     while( 1 ) // polling the whole time..might need to change
         { 
-        // check if first two bytes of the data frame are 0x59 0x59 (the header bytes)
-        if ('Y' == ser_read() && 'Y' == ser_read()) 
-            {
+ 
           // Get the distance data from the TFmini sensor and store it in the variable `dist`
-        
-                ser_printline("reading in ser_read() data frame from TFmini sensor...");
-                ser_write( '\n' ); 
-                // Read the next 7 bytes of the data frame (we only need the distance data, which is 2 bytes)
-                dist_l = ser_read(); // Read the low byte of the distance data
-                dist_h = ser_read(); // Read the high byte of the distance data
-                dist = (dist_h << 8) | dist_l; // Combine the two bytes into a 16-bit value
-            }
+          ser_printline("reading in ser_read() data frame from TFmini sensor...");
+          ser_write( '\n' ); 
+          // Read the next 7 bytes of the data frame (we only need the distance data, which is 2 bytes)
+          dist_l = ser_read(); // Read the low byte of the distance data
+          dist_h = ser_read(); // Read the high byte of the distance data
+          dist = (dist_h << 8) | dist_l; // Combine the two bytes into a 16-bit value
 
-    if (dist > 200) 
-        {
-        // Safe distance, no braking - turn ON green LED
-        gpio_write(GPIO_13, OFF); // RED OFF
-        gpio_write(GPIO_12, ON);  // GREEN ON
-        gpio_write(GPIO_11, OFF); // BLUE OFF
-        } 
-    else if (dist > 100 && dist <= 200) 
-        {
-        // Close, break lightly - turn ON Yellow LED (Red + Green)
-        gpio_write(GPIO_13, ON);  // RED ON
-        gpio_write(GPIO_12, ON);  // GREEN ON
-        gpio_write(GPIO_11, OFF); // BLUE OFF
-        } 
-    else if (dist > 60 && dist <= 100) 
-        {
-        // Very close, break hard - turn ON Red LED
-        gpio_write(GPIO_13, ON);  // RED ON
-        gpio_write(GPIO_12, OFF); // GREEN OFF
-        gpio_write(GPIO_11, OFF); // BLUE OFF
-        } 
-    else if (dist <= 60) 
-        {
-        // Too close, stop - turn ON flashing Red LED (Flashing period = 100 ms)
-        gpio_write(GPIO_13, ON);  // RED ON
-        gpio_write(GPIO_12, OFF); // GREEN OFF
-        gpio_write(GPIO_11, OFF); // BLUE OFF
-        delay_ms(100);
-        gpio_write(GPIO_13, OFF); // RED OFF
-        delay_ms(100);
-        }
-    }
+          ser_printf("Distance: %d cm", dist);
+            
+
+      if (dist > 200) 
+          {
+          // Safe distance, no braking - turn ON green LED
+          gpio_write(GPIO_13, OFF); // RED OFF
+          gpio_write(GPIO_12, ON);  // GREEN ON
+          gpio_write(GPIO_11, OFF); // BLUE OFF
+          } 
+      else if (dist > 100 && dist <= 200) 
+          {
+          // Close, break lightly - turn ON Yellow LED (Red + Green)
+          gpio_write(GPIO_13, ON);  // RED ON
+          gpio_write(GPIO_12, ON);  // GREEN ON
+          gpio_write(GPIO_11, OFF); // BLUE OFF
+          } 
+      else if (dist > 60 && dist <= 100) 
+          {
+          // Very close, break hard - turn ON Red LED
+          gpio_write(GPIO_13, ON);  // RED ON
+          gpio_write(GPIO_12, OFF); // GREEN OFF
+          gpio_write(GPIO_11, OFF); // BLUE OFF
+          } 
+      else if (dist <= 60) 
+          {
+          // Too close, stop - turn ON flashing Red LED (Flashing period = 100 ms)
+          gpio_write(GPIO_13, ON);  // RED ON
+          gpio_write(GPIO_12, OFF); // GREEN OFF
+          gpio_write(GPIO_11, OFF); // BLUE OFF
+          delay_ms(100);
+          gpio_write(GPIO_13, OFF); // RED OFF
+          delay_ms(100);
+          }
+      }
 }
 
 
