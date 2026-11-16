@@ -6,6 +6,12 @@
 #include <stdio.h>
 
 #include "eecs_388_lib.h"
+/** While testing Task 1 alone, set to 1 to print distances to the Serial Monitor.
+Set to 0 for the real project: Arduino1's TX pin (pin 1) is wired to Arduino2,
+so any text printed here would also be sent to Arduino2 as garbage. **/
+#define DEBUG_PRINT (1)
+#define SEND_PERIOD_MS (100) /* how often to send a distance to Arduino2 (Task 3, partner) /**
+
 
 /******************************************************************************
  *   Function: setup() - Initializes the Arduino System
@@ -17,7 +23,7 @@
  *******************************************************************************/
 void setup() 
 {
-uart_init();
+uart_init(); /* must be 115200 baud: ubrr = 16 with U2X0 (double speed) set */
 
 return;
 }
@@ -33,8 +39,8 @@ return;
 void loop() 
 {
 uint16_t dist = 0;              /* LIDAR distance data is 16 bits. */
-uint8_t dist_l = 0;           /* LIDAR distance data is sent as two bytes, low byte first. */
-uint8_t dist_h = 0;          /* LIDAR distance data is sent as two bytes, high byte second. */
+uint8_t dist_L = 0;            /* LIDAR distance data low byte. */
+uint8_t dist_H = 0;            /* LIDAR distance data high byte. */
 
 ser_printline("Setup completed.");
 ser_write( '\n' );
@@ -51,8 +57,14 @@ while( 1 )
         - You will need to write code to read the subsequent bytes to get the distance data
         - You will need to process the data received from the sensor to get the correct distance value
     */
+    
     if ('Y' == ser_read() && 'Y' == ser_read()) 
         {
+            dist_L = ser_read(); // byte 3
+            dist_H = ser_read(); // byte 4
+            dist = dist_L | ((uint16_t) dist_H << 8);
+
+            ser_printf("distance = %d cm", dist);
         /* 
 
             - print the measured value to the console (i.e. the serial monitor) 
@@ -64,19 +76,9 @@ while( 1 )
 
 			- Send the distance to Arduino2
         */
-            ser_printline("reading in ser_read() data frame from TFmini sensor...");
-            ser_write( '\n' ); 
-            // Read the next 7 bytes of the data frame (we only need the distance data, which is 2 bytes)
-            dist_l = ser_read(); // Read the low byte of the distance data
-            dist_h = ser_read(); // Read the high byte of the distance data
-            dist = (dist_h << 8) | dist_l; // Combine the two bytes into a 16-bit value
-            ser_printf("Distance is: %d cm\n", dist); // Print the distance to the console
-
-            // write the distance to Arduino2
-            ser_write(dist_l); // Send the low byte of the distance data
-            ser_write(dist_h); // Send the high byte of the distance data
-            // @NOTE: might have to recalculate distance in arduino 2 since it's a 16 byte value...? 
- 
+            ser_write(dist_L); // send low byte first
+            ser_write(dist_H); // send high byte second
+            ser_printline("Distance sent to Arduino2.");
         }
     }
 

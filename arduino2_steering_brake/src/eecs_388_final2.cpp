@@ -60,23 +60,23 @@ static void auto_brake()
     uint8_t dist_l = 0;           /* LIDAR distance data is sent as two bytes, low byte first. */
     uint8_t dist_h = 0;          /* LIDAR distance data is sent as two bytes, high byte second. */
 
-ser_printline("Setup completed.");
-ser_write( '\n' );
+    ser_printline("Setup completed.");
+    ser_write( '\n' );
 
-while( 1 )
-    { 
-    // check if first two bytes of the data frame are 0x59 0x59 (the header bytes)
-    if ('Y' == ser_read() && 'Y' == ser_read()) 
-        {
-			// Get the distance data from the TFmini sensor and store it in the variable `dist`
-    
-            ser_printline("reading in ser_read() data frame from TFmini sensor...");
-            ser_write( '\n' ); 
-            // Read the next 7 bytes of the data frame (we only need the distance data, which is 2 bytes)
-            dist_l = ser_read(); // Read the low byte of the distance data
-            dist_h = ser_read(); // Read the high byte of the distance data
-            dist = (dist_h << 8) | dist_l; // Combine the two bytes into a 16-bit value
-        }
+    while( 1 ) // polling the whole time..might need to change
+        { 
+        // check if first two bytes of the data frame are 0x59 0x59 (the header bytes)
+        if ('Y' == ser_read() && 'Y' == ser_read()) 
+            {
+          // Get the distance data from the TFmini sensor and store it in the variable `dist`
+        
+                ser_printline("reading in ser_read() data frame from TFmini sensor...");
+                ser_write( '\n' ); 
+                // Read the next 7 bytes of the data frame (we only need the distance data, which is 2 bytes)
+                dist_l = ser_read(); // Read the low byte of the distance data
+                dist_h = ser_read(); // Read the high byte of the distance data
+                dist = (dist_h << 8) | dist_l; // Combine the two bytes into a 16-bit value
+            }
 
     if (dist > 200) 
         {
